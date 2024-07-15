@@ -22,9 +22,11 @@ INITIAL_VELOCITY = 0.1
 GRAVITY = -0.002  # Adjust this value for realistic gravity
 DAMPING = 0.9  # Energy loss on bounce
 SIZE_INCREMENT = 0.1  # Increase in ball radius on collision
-FRAMES = 300
+FRAMES = 1200
 SOUND_PATH = 'assets/sounds/chime-sound.mp3'
 SOUND_DEVIATION = 0
+FPS = 60
+NO_SOUND = True  # If true there is no sound added for collisions if false there is sound added
 
 # Number of balls
 NUM_BALLS = 1
@@ -185,12 +187,14 @@ def save_frames(num_frames):
 save_frames(FRAMES)
 
 print(collision_frames)
+if NO_SOUND:
+    collision_frames = []
 
 # Load frame filenames into moviepy
 frame_filenames = [f"temp/frame_{frame:03d}.png" for frame in range(FRAMES)]
 
 # Create VideoClip from image sequence
-clips = ImageSequenceClip(frame_filenames, fps=30)
+clips = ImageSequenceClip(frame_filenames, fps=FPS)
 
 # Load collision sound clip (if necessary)
 audio_clip = AudioFileClip(SOUND_PATH)
@@ -201,16 +205,16 @@ final_clips = []
 # Iterate over each frame and decide whether to add audio or not
 for i, frame in enumerate(frame_filenames):
     if i - SOUND_DEVIATION in collision_frames:
-        final_clip = clips.subclip(i / 30, (i + 1) / 30).set_audio(audio_clip)
+        final_clip = clips.subclip(i / FPS, (i + 1) / FPS).set_audio(audio_clip)
     else:
-        final_clip = clips.subclip(i / 30, (i + 1) / 30)
+        final_clip = clips.subclip(i / FPS, (i + 1) / FPS)
     final_clips.append(final_clip)
 
 # Concatenate clips into final video
 final_video = concatenate_videoclips(final_clips)
 
 # Export the final video with synchronized audio
-final_video.write_videofile('bouncing_balls_with_sound.mp4', fps=30)
+final_video.write_videofile('bouncing_balls_with_sound.mp4', fps=FPS)
 
 # Clean up: remove temporary PNG files
 for filename in frame_filenames:
